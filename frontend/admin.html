@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <header class="page-header">
+      <div class="container">
+        <h1 class="page-title">Admin Dashboard</h1>
+        <p class="page-subtitle">Wedding Hall Booking System</p>
+      </div>
+    </header>
+
+    <main class="page-content">
+      <section
+        class="section section-bookings"
+        aria-labelledby="bookings-heading"
+      >
+        <div class="container">
+          <div class="section-header">
+            <h2 id="bookings-heading" class="section-title">
+              Bookings Overview
+            </h2>
+            <p class="section-description">
+              Review upcoming and recent bookings at a glance.
+            </p>
+          </div>
+
+          <p
+            id="bookings-loading"
+            class="status-message status-message-loading"
+            role="status"
+            aria-live="polite"
+            hidden
+          >
+            Loading bookings...
+          </p>
+          <p
+            id="bookings-error"
+            class="status-message status-message-error"
+            role="alert"
+            hidden
+          >
+            Sorry, we couldn't load bookings right now. Please try again soon.
+          </p>
+
+          <div
+            class="table-wrapper"
+            role="region"
+            aria-label="Bookings table"
+            tabindex="0"
+          >
+            <table class="table table-bookings">
+              <caption class="table-caption">
+                Booking Records
+              </caption>
+              <thead class="table-head">
+                <tr class="table-row">
+                  <th scope="col" class="table-header">Customer Name</th>
+                  <th scope="col" class="table-header">Phone</th>
+                  <th scope="col" class="table-header">Event Type</th>
+                  <th scope="col" class="table-header">Event Date</th>
+                  <th scope="col" class="table-header">Guest Count</th>
+                  <th scope="col" class="table-header">Booking Status</th>
+                  <th scope="col" class="table-header">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="bookings-body" class="table-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script src="js/admin.js"></script>
+  </body>
+</html>

@@ -82,8 +82,57 @@ const checkDateBooked = async (req, res) => {
   }
 };
 
+const getBookedDates = async (_req, res) => {
+  try {
+    const bookings = await Booking.find({ bookingStatus: { $ne: "cancelled" } })
+      .select("eventDate -_id")
+      .lean();
+
+    const dates = bookings.map((booking) => booking.eventDate).filter(Boolean);
+
+    return res.status(200).json({ data: dates });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: "Failed to fetch booked dates", error: error.message });
+  }
+};
+
+const updateBookingStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const incomingStatus = req.body.bookingStatus || req.body.status;
+
+    const allowedStatuses = ["pending", "confirmed", "cancelled"];
+    if (!allowedStatuses.includes(incomingStatus)) {
+      return res.status(400).json({
+        message: "Invalid status. Use pending, confirmed, or cancelled.",
+      });
+    }
+
+    const updatedBooking = await Booking.findByIdAndUpdate(
+      id,
+      { bookingStatus: incomingStatus },
+      { new: true, runValidators: true },
+    );
+
+    if (!updatedBooking) {
+      return res.status(404).json({ message: "Booking not found" });
+    }
+
+    return res.status(200).json({ data: updatedBooking });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Failed to update booking status",
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   createBooking,
   getAllBookings,
   checkDateBooked,
+  getBookedDates,
+  updateBookingStatus,
 };

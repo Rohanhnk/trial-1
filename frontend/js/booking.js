@@ -22,9 +22,15 @@ document.addEventListener("DOMContentLoaded", () => {
     message.className = `form-message ${isError ? "form-message--error" : "form-message--success"}`;
   };
 
-  const API_BASE_URL = "http://localhost:3000";
+  const API_BASE_URL = "http://127.0.0.1:3000";
+  const bookedDates = [];
   const dateInput = form.querySelector("#eventDate");
   const dateStatus = form.querySelector("#date-status");
+  const calendarWrapper = document.getElementById("availability-calendar");
+  const calendarInput = document.getElementById("availability-picker");
+  const calendarLoading = document.getElementById("calendar-loading");
+  const calendarError = document.getElementById("calendar-error");
+  let calendarInstance = null;
   let dateCheckTimeout = null;
   let dateCheckController = null;
   let dateAvailability = "unknown";
@@ -107,8 +113,121 @@ document.addEventListener("DOMContentLoaded", () => {
       dateCheckTimeout = setTimeout(() => {
         checkDateAvailability(value);
       }, 400);
+
+      if (calendarInstance && value) {
+        calendarInstance.setDate(value, false);
+      }
     });
   }
+
+  const formatDateString = (value) => {
+    if (!value) {
+      return "";
+    }
+
+    if (typeof value === "string") {
+      const trimmed = value.trim();
+      if (!trimmed) {
+        return "";
+      }
+
+      if (trimmed.includes("T")) {
+        return trimmed.split("T")[0];
+      }
+
+      if (trimmed.length >= 10) {
+        return trimmed.slice(0, 10);
+      }
+
+      return trimmed;
+    }
+
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) {
+      return "";
+    }
+
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
+
+  const initCalendar = (dates) => {
+    if (!calendarWrapper || !calendarInput || !window.flatpickr) {
+      if (calendarError) {
+        calendarError.hidden = false;
+      }
+      return;
+    }
+
+    if (calendarInstance) {
+      calendarInstance.destroy();
+    }
+
+    calendarInstance = window.flatpickr(calendarInput, {
+      inline: true,
+      appendTo: calendarWrapper,
+      dateFormat: "Y-m-d",
+      disable: dates,
+      minDate: "today",
+      onChange: (_selectedDates, dateStr) => {
+        if (!dateStr || !dateInput) {
+          return;
+        }
+        dateInput.value = dateStr;
+        checkDateAvailability(dateStr);
+        form.scrollIntoView({ behavior: "smooth", block: "start" });
+      },
+    });
+  };
+
+  const fetchBookedDates = async () => {
+    if (calendarLoading) {
+      calendarLoading.hidden = false;
+    }
+    if (calendarError) {
+      calendarError.hidden = true;
+    }
+    if (calendarWrapper) {
+      calendarWrapper.hidden = true;
+    }
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/bookings/dates`);
+
+      if (!response.ok) {
+        throw new Error("Failed to load availability.");
+      }
+
+      const payload = await response.json();
+      const datesPayload = Array.isArray(payload) ? payload : payload.data;
+
+      if (!Array.isArray(datesPayload)) {
+        throw new Error("Unexpected response format.");
+      }
+
+      const dates = datesPayload
+        .map((dateValue) => formatDateString(dateValue))
+        .filter(Boolean);
+
+      bookedDates.splice(0, bookedDates.length, ...dates);
+      initCalendar(bookedDates);
+      if (calendarWrapper) {
+        calendarWrapper.hidden = false;
+      }
+    } catch (error) {
+      if (calendarError) {
+        calendarError.hidden = false;
+      }
+    } finally {
+      if (calendarLoading) {
+        calendarLoading.hidden = true;
+      }
+    }
+  };
+
+  fetchBookedDates();
 
   let isSubmitting = false;
 

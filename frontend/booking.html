@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Rajyog Mangal Karyalay – Book Your Date</title>
     <link rel="stylesheet" href="css/style.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css"
+    />
   </head>
   <body>
     <nav class="site-nav" aria-label="Primary">
@@ -26,6 +30,53 @@
     </header>
 
     <main>
+      <section class="availability" aria-labelledby="availability-title">
+        <div class="availability__card">
+          <header class="availability__header">
+            <h2 id="availability-title" class="availability__title">
+              Check Date Availability
+            </h2>
+            <p class="availability__subtitle">
+              Blocked dates are highlighted. Select an available date in the
+              form below.
+            </p>
+          </header>
+
+          <p
+            id="calendar-loading"
+            class="status-message status-message-loading"
+            role="status"
+            aria-live="polite"
+          >
+            Loading availability...
+          </p>
+          <p
+            id="calendar-error"
+            class="status-message status-message-error"
+            role="alert"
+            hidden
+          >
+            Sorry, we couldn't load availability right now. Please try again
+            later.
+          </p>
+
+          <div
+            id="availability-calendar"
+            class="calendar calendar--inline"
+            role="group"
+            aria-label="Availability calendar"
+            hidden
+          ></div>
+          <input
+            type="text"
+            id="availability-picker"
+            class="calendar__input"
+            aria-hidden="true"
+            tabindex="-1"
+          />
+        </div>
+      </section>
+
       <section class="form-card" aria-labelledby="booking-title">
         <h2 id="booking-title">Wedding Hall Booking Form</h2>
         <p class="form-card__intro">
@@ -118,6 +169,7 @@
       <p>Rajyog Mangal Karyalay</p>
     </footer>
 
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="js/booking.js"></script>
   </body>
 </html>

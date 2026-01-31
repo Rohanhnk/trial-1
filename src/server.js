@@ -9,7 +9,12 @@ const connectDB = require("./config/db");
 const bookingRoutes = require("./routes/bookingRoutes");
 
 const app = express();
-app.use(cors());
+app.use(
+  cors({
+    origin: [/^http:\/\/localhost:\d+$/, /^http:\/\/127\.0\.0\.1:\d+$/],
+    methods: ["GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"],
+  }),
+);
 const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
