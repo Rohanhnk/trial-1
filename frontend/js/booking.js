@@ -80,7 +80,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     try {
       const response = await fetch(
-        `${API_BASE_URL}/api/bookings/check-date?date=${encodeURIComponent(eventDate)}`,
+        `${API_BASE_URL}/api/bookings/check-date?eventDate=${encodeURIComponent(eventDate)}`,
         { signal: dateCheckController.signal },
       );
 
@@ -194,32 +194,35 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     try {
+      // Fetch optimized endpoint that returns array of date strings
       const response = await fetch(`${API_BASE_URL}/api/bookings/dates`);
 
       if (!response.ok) {
-        throw new Error("Failed to load availability.");
+        throw new Error("Failed to load booked dates.");
       }
 
       const payload = await response.json();
-      const datesPayload = Array.isArray(payload) ? payload : payload.data;
+      const dates = Array.isArray(payload) ? payload : payload.data;
 
-      if (!Array.isArray(datesPayload)) {
+      if (!Array.isArray(dates)) {
         throw new Error("Unexpected response format.");
       }
 
-      const dates = datesPayload
-        .map((dateValue) => formatDateString(dateValue))
-        .filter(Boolean);
-
+      // API returns pre-formatted YYYY-MM-DD strings, already deduplicated and sorted
+      // Store in bookedDates for calendar initialization
       bookedDates.splice(0, bookedDates.length, ...dates);
       initCalendar(bookedDates);
+
       if (calendarWrapper) {
         calendarWrapper.hidden = false;
       }
     } catch (error) {
+      // Show error and initialize calendar with empty list to allow bookings
       if (calendarError) {
         calendarError.hidden = false;
       }
+      bookedDates.splice(0, bookedDates.length);
+      initCalendar(bookedDates);
     } finally {
       if (calendarLoading) {
         calendarLoading.hidden = true;

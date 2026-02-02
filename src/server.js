@@ -1,33 +1,38 @@
-const cors = require("cors");
-
-("use strict");
+require("dotenv").config();
+"use strict";
 
 const express = require("express");
-require("dotenv").config();
+const cors = require("cors");
 
 const connectDB = require("./config/db");
 const bookingRoutes = require("./routes/bookingRoutes");
 
 const app = express();
+
+// Middleware
 app.use(
   cors({
     origin: [/^http:\/\/localhost:\d+$/, /^http:\/\/127\.0\.0\.1:\d+$/],
     methods: ["GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"],
-  }),
+  })
 );
-const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
 
-app.use("/api", bookingRoutes);
+// ✅ FIXED ROUTE MOUNT
+app.use("/api/bookings", bookingRoutes);
 
+// Health check
 app.get("/", (req, res) => {
   res.status(200).json({ message: "Server running" });
 });
 
+// 404 handler
 app.use((req, res) => {
   res.status(404).json({ message: "Route not found" });
 });
+
+const PORT = process.env.PORT || 3000;
 
 const startServer = async () => {
   await connectDB();

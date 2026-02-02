@@ -11,15 +11,19 @@ const {
 
 const router = express.Router();
 
-router.post("/bookings", createBooking);
-router.get("/bookings", getAllBookings);
-router.get("/bookings/dates", getBookedDates);
-router.patch("/bookings/:id/status", updateBookingStatus);
-router.get("/bookings/check-date", (req, res) => {
-  if (req.query.date && !req.query.eventDate) {
-    req.query.eventDate = req.query.date;
-  }
-  return checkDateBooked(req, res);
-});
+// Create booking
+router.post("/", createBooking);
+
+// Get all bookings
+router.get("/", getAllBookings);
+
+// Calendar blocked dates
+router.get("/dates", getBookedDates);
+
+// Update booking status
+router.patch("/:id/status", updateBookingStatus);
+
+// Check date availability
+router.get("/check-date", checkDateBooked);
 
 module.exports = router;

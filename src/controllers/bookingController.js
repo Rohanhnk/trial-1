@@ -16,6 +16,7 @@ const getDateRange = (eventDate) => {
 
 const createBooking = async (req, res) => {
   try {
+    console.log("Incoming booking:", req.body);
     const { eventDate } = req.body;
 
     if (!eventDate) {
@@ -84,13 +85,41 @@ const checkDateBooked = async (req, res) => {
 
 const getBookedDates = async (_req, res) => {
   try {
-    const bookings = await Booking.find({ bookingStatus: { $ne: "cancelled" } })
-      .select("eventDate -_id")
-      .lean();
+    // Optimized aggregation pipeline returns only eventDate strings
+    // Uses $match to filter active bookings, $project to select only eventDate
+    // More efficient than fetching full objects and mapping
+    const dates = await Booking.aggregate([
+      {
+        $match: {
+          bookingStatus: { $ne: "cancelled" },
+          eventDate: { $exists: true, $ne: null },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          eventDate: 1,
+        },
+      },
+      {
+        $group: {
+          _id: "$eventDate",
+        },
+      },
+      {
+        $sort: { _id: 1 },
+      },
+      {
+        $project: {
+          eventDate: "$_id",
+          _id: 0,
+        },
+      },
+    ]);
 
-    const dates = bookings.map((booking) => booking.eventDate).filter(Boolean);
+    const dateStrings = dates.map((doc) => doc.eventDate);
 
-    return res.status(200).json({ data: dates });
+    return res.status(200).json({ data: dateStrings });
   } catch (error) {
     return res
       .status(500)
